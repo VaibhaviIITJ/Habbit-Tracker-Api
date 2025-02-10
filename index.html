@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📅 Daily Habit Tracker</title>
+<style>
+body {
+font-family: 'Arial', sans-serif;
+background: #f4f4f4;
+text-align: center;
+padding: 40px;
+margin: 0;
+}
+
+.habit-container {
+background: white;
+padding: 20px;
+max-width: 500px;
+margin: auto;
+border-radius: 12px;
+box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+h1 {
+color: #333;
+font-size: 28px;
+}
+
+#habit_display {
+font-size: 20px;
+color: #444;
+margin-top: 20px;
+font-style: italic;
+}
+
+.fetch-habit-btn, .mark-complete-btn {
+background-color: #007bff;
+color: white;
+border: none;
+padding: 12px 20px;
+margin-top: 20px;
+font-size: 16px;
+border-radius: 6px;
+cursor: pointer;
+transition: 0.3s;
+}
+
+.fetch-habit-btn:hover, .mark-complete-btn:hover {
+background-color: #0056b3;
+}
+
+select {
+font-size: 16px;
+padding: 5px;
+margin-top: 10px;
+}
+</style>
+<script>
+async function fetchHabit() {
+const category = document.getElementById("habit_category").value;
+try {
+const response = await fetch(`http://192.168.100.4:5003/habit?category=${category}`);
+if (!response.ok) {
+throw new Error("Failed to fetch habit");
+}
+const data = await response.json();
+document.getElementById("habit_display").innerText = `📅 Today's Habit: ${data.habit}`;
+document.getElementById("mark_complete_btn").setAttribute("onclick", `markHabitComplete('${data.habit}')`);
+} catch (error) {
+document.getElementById("habit_display").innerText = "⚠️ Unable to fetch a habit. Try again.";
+}
+}
+
+async function markHabitComplete(habit) {
+try {
+const response = await fetch(`http://192.168.100.4:5003/habit/complete?habit=${habit}`, { method: "POST" });
+if (!response.ok) {
+throw new Error("Failed to mark habit as complete");
+}
+const data = await response.json();
+document.getElementById("habit_display").innerText = `✅ ${habit} - Completed! (${data.totalCompleted} habits completed)`;
+} catch (error) {
+document.getElementById("habit_display").innerText = "⚠️ Unable to mark habit as complete. Try again.";
+}
+}
+</script>
+</head>
+<body>
+
+<div class="habit-container">
+<h1>📅 Daily Habit Tracker</h1>
+<label for="habit_category">Choose Habit Category:</label>
+<select id="habit_category">
+<option value="health">Health</option>
+<option value="productivity">Productivity</option>
+<option value="mindfulness">Mindfulness</option>
+</select>
+<br>
+<button class="fetch-habit-btn" onclick="fetchHabit()">Get Today's Habit</button>
+<p id="habit_display">Click the button to get your daily habit!</p>
+<button id="mark_complete_btn" class="mark-complete-btn" style="display: none;">Mark as Completed</button>
+</div>
+
+</body>
+</html>
